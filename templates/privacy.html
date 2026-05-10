@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Policy — Spendly{% endblock %}
+
+{% block content %}
+
+<section style="padding: 4rem 2rem 3rem; text-align: center; background: var(--paper);">
+    <div style="max-width: 720px; margin: 0 auto;">
+        <div class="hero-badge" style="margin-bottom: 1.25rem;">Legal</div>
+        <h1 style="font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3rem); line-height: 1.15; margin-bottom: 0.75rem;">
+            Privacy <span style="color: var(--accent);">Policy</span>
+        </h1>
+        <p style="color: var(--ink-muted); font-size: 0.9rem;">Last updated: May 2026</p>
+    </div>
+</section>
+
+<section style="background: var(--paper-warm); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 4rem 2rem;">
+    <div style="max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 2.25rem;">
+
+        <div style="background: var(--paper-card); border: 1px solid var(--border-soft); border-radius: var(--radius-md); padding: 1.75rem 2rem;">
+            <h2 style="font-size: 1rem; font-weight: 600; color: var(--accent); margin-bottom: 0.6rem;">1. Data We Collect</h2>
+            <p style="color: var(--ink-muted); line-height: 1.75;">When you create an account, we collect basic information such as your name and email address. As you use Spendly, we also store the expense records you enter — including amounts, categories, dates, and any descriptions you provide. We do not collect payment information or government-issued identification.</p>
+        </div>
+
+        <div style="background: var(--paper-card); border: 1px solid var(--border-soft); border-radius: var(--radius-md); padding: 1.75rem 2rem;">
+            <h2 style="font-size: 1rem; font-weight: 600; color: var(--accent); margin-bottom: 0.6rem;">2. How We Use Your Data</h2>
+            <p style="color: var(--ink-muted); line-height: 1.75;">Your data is used solely to provide and improve the Spendly service. This includes displaying your expense history, generating summaries and breakdowns, and maintaining your account. We do not use your financial data for advertising, profiling, or any purpose beyond operating the application.</p>
+        </div>
+
+        <div style="background: var(--paper-card); border: 1px solid var(--border-soft); border-radius: var(--radius-md); padding: 1.75rem 2rem;">
+            <h2 style="font-size: 1rem; font-weight: 600; color: var(--accent); margin-bottom: 0.6rem;">3. Data Storage</h2>
+            <p style="color: var(--ink-muted); line-height: 1.75;">Your data is stored securely and is accessible only to you through your authenticated account. We apply standard security practices to protect stored information. You may request deletion of your account and all associated data at any time by contacting us or using the account settings.</p>
+        </div>
+
+        <div style="background: var(--paper-card); border: 1px solid var(--border-soft); border-radius: var(--radius-md); padding: 1.75rem 2rem;">
+            <h2 style="font-size: 1rem; font-weight: 600; color: var(--accent); margin-bottom: 0.6rem;">4. Third Party Services</h2>
+            <p style="color: var(--ink-muted); line-height: 1.75;">Spendly does not sell or share your personal data with third parties. We may use minimal infrastructure services (such as hosting providers) to operate the application, but these providers are not permitted to access or use your data for their own purposes.</p>
+        </div>
+
+        <div style="background: var(--paper-card); border: 1px solid var(--border-soft); border-radius: var(--radius-md); padding: 1.75rem 2rem;">
+            <h2 style="font-size: 1rem; font-weight: 600; color: var(--accent); margin-bottom: 0.6rem;">5. Contact Us</h2>
+            <p style="color: var(--ink-muted); line-height: 1.75;">If you have any questions or concerns about this Privacy Policy or how your data is handled, please reach out to us. We are committed to addressing your concerns promptly and transparently. You can contact us via the support email listed on the application's help page.</p>
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}
