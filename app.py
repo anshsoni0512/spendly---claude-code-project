@@ -2,7 +2,8 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from database.db import get_db, init_db, seed_db
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, date
+import calendar
 
 app = Flask(__name__)
 app.secret_key = "spendly-dev-secret"
@@ -176,24 +177,55 @@ def _get_categories(raw_rows):
     return result
 
 
+def _parse_date(s):
+    try:
+        datetime.strptime(s, "%Y-%m-%d")
+        return s
+    except ValueError:
+        return ""
+
+
+def _months_ago(n):
+    today = date.today()
+    month = today.month - n
+    year  = today.year
+    while month <= 0:
+        month += 12
+        year  -= 1
+    day = min(today.day, calendar.monthrange(year, month)[1])
+    return date(year, month, day).strftime("%Y-%m-%d")
+
+
 @app.route("/profile")
 def profile():
     if not session.get("user_id"):
         return redirect(url_for("login"))
 
     user_id = session["user_id"]
+
+    date_from = _parse_date(request.args.get("from", "").strip())
+    date_to   = _parse_date(request.args.get("to", "").strip())
+
     db = get_db()
 
     user_row = db.execute(
         "SELECT name, email, created_at FROM users WHERE id = ?", (user_id,)
     ).fetchone()
 
-    raw_rows = db.execute(
-        "SELECT amount, category, date, description FROM expenses"
-        " WHERE user_id = ? ORDER BY date DESC",
-        (user_id,)
-    ).fetchall()
+    if date_from and date_to:
+        sql    = "SELECT amount, category, date, description FROM expenses WHERE user_id = ? AND date BETWEEN ? AND ? ORDER BY date DESC"
+        params = (user_id, date_from, date_to)
+    elif date_from:
+        sql    = "SELECT amount, category, date, description FROM expenses WHERE user_id = ? AND date >= ? ORDER BY date DESC"
+        params = (user_id, date_from)
+    elif date_to:
+        sql    = "SELECT amount, category, date, description FROM expenses WHERE user_id = ? AND date <= ? ORDER BY date DESC"
+        params = (user_id, date_to)
+    else:
+        sql    = "SELECT amount, category, date, description FROM expenses WHERE user_id = ? ORDER BY date DESC"
+        params = (user_id,)
 
+    raw_rows = db.execute(sql, params).fetchall()
     db.close()
 
     member_since = datetime.strptime(user_row["created_at"][:10], "%Y-%m-%d").strftime("%B %Y")
@@ -202,9 +234,19 @@ def profile():
     stats        = _get_stats(raw_rows)
     categories   = _get_categories(raw_rows)
 
+    today_str = date.today().strftime("%Y-%m-%d")
+    quick_filters = {
+        "1m": _months_ago(1),
+        "3m": _months_ago(3),
+        "6m": _months_ago(6),
+        "today": today_str,
+    }
+
     return render_template("profile.html",
                            user=user, stats=stats,
-                           transactions=transactions, categories=categories)
+                           transactions=transactions, categories=categories,
+                           date_from=date_from, date_to=date_to,
+                           quick_filters=quick_filters)
 
 
 @app.route("/expenses/add")
