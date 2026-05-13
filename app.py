@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from database.db import get_db, init_db, seed_db
+from collections import defaultdict
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = "spendly-dev-secret"
@@ -123,42 +125,82 @@ def logout():
     return redirect(url_for("landing"))
 
 
+# ------------------------------------------------------------------ #
+# Profile helpers                                                      #
+# ------------------------------------------------------------------ #
+
+def _get_transactions(raw_rows):
+    return [
+        {
+            "date": row["date"],
+            "description": row["description"],
+            "category": row["category"],
+            "amount": f"₹{row['amount']:,.2f}"
+        }
+        for row in raw_rows
+    ]
+
+
+def _get_stats(raw_rows):
+    total = sum(row["amount"] for row in raw_rows)
+    cat_totals = defaultdict(float)
+    for row in raw_rows:
+        cat_totals[row["category"]] += row["amount"]
+    top = max(cat_totals, key=cat_totals.get) if cat_totals else "N/A"
+    return {
+        "total_spent": f"₹{total:,.0f}",
+        "transactions": len(raw_rows),
+        "top_category": top,
+    }
+
+
+def _get_categories(raw_rows):
+    totals = defaultdict(float)
+    for row in raw_rows:
+        totals[row["category"]] += row["amount"]
+
+    if not totals:
+        return []
+
+    sorted_cats = sorted(totals.items(), key=lambda x: x[1], reverse=True)
+    max_total = sorted_cats[0][1]
+
+    result = []
+    for rank, (name, cat_total) in enumerate(sorted_cats, start=1):
+        result.append({
+            "name": name,
+            "amount": f"₹{cat_total:,.0f}",
+            "percent": int(cat_total / max_total * 100),
+            "fill": f"fill-{min(rank, 6)}",
+        })
+    return result
+
+
 @app.route("/profile")
 def profile():
     if not session.get("user_id"):
         return redirect(url_for("login"))
 
-    user = {
-        "name": "Demo User",
-        "email": "demo@spendly.com",
-        "member_since": "May 2026",
-    }
+    user_id = session["user_id"]
+    db = get_db()
 
-    stats = {
-        "total_spent": "₹6,099",
-        "transactions": 8,
-        "top_category": "Shopping",
-    }
+    user_row = db.execute(
+        "SELECT name, email, created_at FROM users WHERE id = ?", (user_id,)
+    ).fetchone()
 
-    transactions = [
-        {"date": "2026-05-09", "description": "New headphones",      "category": "Shopping",      "amount": "₹2,300.00"},
-        {"date": "2026-05-11", "description": "Grocery run",          "category": "Food",          "amount": "₹320.00"},
-        {"date": "2026-05-10", "description": "Miscellaneous",        "category": "Other",         "amount": "₹200.00"},
-        {"date": "2026-05-07", "description": "Netflix subscription", "category": "Entertainment", "amount": "₹599.00"},
-        {"date": "2026-05-05", "description": "Pharmacy - vitamins",  "category": "Health",        "amount": "₹850.00"},
-        {"date": "2026-05-03", "description": "Electricity bill",     "category": "Bills",         "amount": "₹1,200.00"},
-        {"date": "2026-05-02", "description": "Ola cab to office",    "category": "Transport",     "amount": "₹180.00"},
-        {"date": "2026-05-01", "description": "Lunch at café",        "category": "Food",          "amount": "₹450.00"},
-    ]
+    raw_rows = db.execute(
+        "SELECT amount, category, date, description FROM expenses"
+        " WHERE user_id = ? ORDER BY date DESC",
+        (user_id,)
+    ).fetchall()
 
-    categories = [
-        {"name": "Shopping",      "amount": "₹2,300", "percent": 100, "fill": "fill-1"},
-        {"name": "Bills",         "amount": "₹1,200", "percent": 52,  "fill": "fill-2"},
-        {"name": "Health",        "amount": "₹850",   "percent": 37,  "fill": "fill-3"},
-        {"name": "Entertainment", "amount": "₹599",   "percent": 26,  "fill": "fill-4"},
-        {"name": "Food",          "amount": "₹770",   "percent": 33,  "fill": "fill-5"},
-        {"name": "Transport",     "amount": "₹180",   "percent": 8,   "fill": "fill-6"},
-    ]
+    db.close()
+
+    member_since = datetime.strptime(user_row["created_at"][:10], "%Y-%m-%d").strftime("%B %Y")
+    user = {"name": user_row["name"], "email": user_row["email"], "member_since": member_since}
+    transactions = _get_transactions(raw_rows)
+    stats        = _get_stats(raw_rows)
+    categories   = _get_categories(raw_rows)
 
     return render_template("profile.html",
                            user=user, stats=stats,
