@@ -18,8 +18,12 @@
             on budget — without the spreadsheet headache.
         </p>
         <div class="hero-actions">
-            <a href="{{ url_for('register') }}" class="btn-hero">Create free account</a>
-            <a href="#" id="btn-how-it-works" class="btn-hero">See how it works</a>
+            {% if current_user %}
+                <a href="{{ url_for('profile') }}" class="btn-hero">Go to dashboard</a>
+            {% else %}
+                <a href="{{ url_for('register') }}" class="btn-hero">Create free account</a>
+                <a href="#" id="btn-how-it-works" class="btn-hero">See how it works</a>
+            {% endif %}
         </div>
     </div>
     <div class="hero-visual">
@@ -140,10 +144,12 @@
         document.body.style.overflow = '';
     }
 
-    trigger.addEventListener('click', function (e) {
-        e.preventDefault();
-        openModal();
-    });
+    if (trigger) {
+        trigger.addEventListener('click', function (e) {
+            e.preventDefault();
+            openModal();
+        });
+    }
 
     closeBtn.addEventListener('click', closeModal);
 

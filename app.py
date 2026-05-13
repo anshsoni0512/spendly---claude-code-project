@@ -98,7 +98,7 @@ def login():
                                    email=email)
 
         session["user_id"] = user["id"]
-        return redirect(url_for("landing"))
+        return redirect(url_for("profile"))
 
     return render_template("login.html")
 
@@ -125,7 +125,44 @@ def logout():
 
 @app.route("/profile")
 def profile():
-    return "Profile page — coming in Step 4"
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+
+    user = {
+        "name": "Demo User",
+        "email": "demo@spendly.com",
+        "member_since": "May 2026",
+    }
+
+    stats = {
+        "total_spent": "₹6,099",
+        "transactions": 8,
+        "top_category": "Shopping",
+    }
+
+    transactions = [
+        {"date": "2026-05-09", "description": "New headphones",      "category": "Shopping",      "amount": "₹2,300.00"},
+        {"date": "2026-05-11", "description": "Grocery run",          "category": "Food",          "amount": "₹320.00"},
+        {"date": "2026-05-10", "description": "Miscellaneous",        "category": "Other",         "amount": "₹200.00"},
+        {"date": "2026-05-07", "description": "Netflix subscription", "category": "Entertainment", "amount": "₹599.00"},
+        {"date": "2026-05-05", "description": "Pharmacy - vitamins",  "category": "Health",        "amount": "₹850.00"},
+        {"date": "2026-05-03", "description": "Electricity bill",     "category": "Bills",         "amount": "₹1,200.00"},
+        {"date": "2026-05-02", "description": "Ola cab to office",    "category": "Transport",     "amount": "₹180.00"},
+        {"date": "2026-05-01", "description": "Lunch at café",        "category": "Food",          "amount": "₹450.00"},
+    ]
+
+    categories = [
+        {"name": "Shopping",      "amount": "₹2,300", "percent": 100, "fill": "fill-1"},
+        {"name": "Bills",         "amount": "₹1,200", "percent": 52,  "fill": "fill-2"},
+        {"name": "Health",        "amount": "₹850",   "percent": 37,  "fill": "fill-3"},
+        {"name": "Entertainment", "amount": "₹599",   "percent": 26,  "fill": "fill-4"},
+        {"name": "Food",          "amount": "₹770",   "percent": 33,  "fill": "fill-5"},
+        {"name": "Transport",     "amount": "₹180",   "percent": 8,   "fill": "fill-6"},
+    ]
+
+    return render_template("profile.html",
+                           user=user, stats=stats,
+                           transactions=transactions, categories=categories)
 
 
 @app.route("/expenses/add")
