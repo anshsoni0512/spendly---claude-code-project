@@ -969,6 +969,105 @@ a { color: inherit; text-decoration: none; }
     font-variant-numeric: tabular-nums;
 }
 
+/* ── Date filter ─────────────────────────────── */
+.filter-card {
+    padding: 1.25rem 2rem;
+}
+
+.quick-filters {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn-quick {
+    padding: 0.4rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+    text-decoration: none;
+    background: var(--paper);
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.btn-quick:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-light);
+}
+
+.btn-quick-active {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.filter-form {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.filter-fields {
+    display: flex;
+    gap: 1rem;
+    flex: 1;
+    flex-wrap: wrap;
+}
+
+.filter-fields .form-group {
+    margin-bottom: 0;
+    min-width: 140px;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.btn-filter {
+    padding: 0.6rem 1.25rem;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.btn-filter:hover {
+    background: var(--accent);
+}
+
+.btn-filter-clear {
+    padding: 0.55rem 1rem;
+    font-size: 0.9rem;
+    text-decoration: none;
+}
+
+.filter-active-label {
+    margin-top: 0.75rem;
+    margin-bottom: 0;
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.filter-active-label svg {
+    width: 14px;
+    height: 14px;
+}
+
 @media (max-width: 768px) {
     .profile-stats { grid-template-columns: 1fr; }
     .category-row  { grid-template-columns: 90px 1fr 70px; }
