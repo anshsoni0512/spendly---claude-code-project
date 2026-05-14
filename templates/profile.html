@@ -17,9 +17,12 @@
                 <i data-lucide="calendar"></i>Member since {{ user.member_since }}
             </div>
         </div>
-        <a href="{{ url_for('analytics') }}" class="btn-primary" style="margin-left:auto">
-            <i data-lucide="bar-chart-2" style="width:16px;height:16px;vertical-align:middle;margin-right:6px"></i>Analytics
-        </a>
+        <div style="margin-left:auto;display:flex;gap:0.75rem">
+            <a href="{{ url_for('add_expense') }}" class="btn-primary">+ Add Expense</a>
+            <a href="{{ url_for('analytics') }}" class="btn-primary">
+                <i data-lucide="bar-chart-2" style="width:16px;height:16px;vertical-align:middle;margin-right:6px"></i>Analytics
+            </a>
+        </div>
     </div>
 
     <!-- Date filter -->
