@@ -133,10 +133,11 @@ def logout():
 def _get_transactions(raw_rows):
     return [
         {
-            "date": row["date"],
+            "id":          row["id"],
+            "date":        row["date"],
             "description": row["description"],
-            "category": row["category"],
-            "amount": f"₹{row['amount']:,.2f}"
+            "category":    row["category"],
+            "amount":      f"₹{row['amount']:,.2f}"
         }
         for row in raw_rows
     ]
@@ -213,16 +214,16 @@ def profile():
     ).fetchone()
 
     if date_from and date_to:
-        sql    = "SELECT amount, category, date, description FROM expenses WHERE user_id = ? AND date BETWEEN ? AND ? ORDER BY date DESC"
+        sql    = "SELECT id, amount, category, date, description FROM expenses WHERE user_id = ? AND date BETWEEN ? AND ? ORDER BY date DESC"
         params = (user_id, date_from, date_to)
     elif date_from:
-        sql    = "SELECT amount, category, date, description FROM expenses WHERE user_id = ? AND date >= ? ORDER BY date DESC"
+        sql    = "SELECT id, amount, category, date, description FROM expenses WHERE user_id = ? AND date >= ? ORDER BY date DESC"
         params = (user_id, date_from)
     elif date_to:
-        sql    = "SELECT amount, category, date, description FROM expenses WHERE user_id = ? AND date <= ? ORDER BY date DESC"
+        sql    = "SELECT id, amount, category, date, description FROM expenses WHERE user_id = ? AND date <= ? ORDER BY date DESC"
         params = (user_id, date_to)
     else:
-        sql    = "SELECT amount, category, date, description FROM expenses WHERE user_id = ? ORDER BY date DESC"
+        sql    = "SELECT id, amount, category, date, description FROM expenses WHERE user_id = ? ORDER BY date DESC"
         params = (user_id,)
 
     raw_rows = db.execute(sql, params).fetchall()
@@ -308,9 +309,71 @@ def add_expense():
                            date=date.today().strftime("%Y-%m-%d"))
 
 
-@app.route("/expenses/<int:id>/edit")
+@app.route("/expenses/<int:id>/edit", methods=["GET", "POST"])
 def edit_expense(id):
-    return "Edit expense — coming in Step 8"
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+
+    categories = ["Food", "Transport", "Bills", "Health", "Entertainment", "Shopping", "Other"]
+    db = get_db()
+
+    expense = db.execute("SELECT * FROM expenses WHERE id = ?", (id,)).fetchone()
+    if expense is None:
+        db.close()
+        return "Not found", 404
+    if expense["user_id"] != session["user_id"]:
+        db.close()
+        return "Forbidden", 403
+
+    if request.method == "POST":
+        amount_raw  = request.form.get("amount", "").strip()
+        category    = request.form.get("category", "").strip()
+        date_val    = request.form.get("date", "").strip()
+        description = request.form.get("description", "").strip()
+
+        try:
+            amount = float(amount_raw)
+            if amount <= 0:
+                raise ValueError
+        except ValueError:
+            db.close()
+            return render_template("edit_expense.html",
+                                   categories=categories, expense_id=id,
+                                   error="Amount must be a positive number.",
+                                   amount=amount_raw, category=category,
+                                   date=date_val, description=description)
+
+        if category not in categories:
+            db.close()
+            return render_template("edit_expense.html",
+                                   categories=categories, expense_id=id,
+                                   error="Please select a valid category.",
+                                   amount=amount_raw, category=category,
+                                   date=date_val, description=description)
+
+        if not _parse_date(date_val):
+            db.close()
+            return render_template("edit_expense.html",
+                                   categories=categories, expense_id=id,
+                                   error="Please enter a valid date.",
+                                   amount=amount_raw, category=category,
+                                   date=date_val, description=description)
+
+        db.execute(
+            "UPDATE expenses SET amount=?, category=?, date=?, description=? WHERE id=? AND user_id=?",
+            (amount, category, date_val, description, id, session["user_id"]),
+        )
+        db.commit()
+        db.close()
+        return redirect(url_for("profile"))
+
+    db.close()
+    return render_template("edit_expense.html",
+                           categories=categories, expense_id=id,
+                           amount=expense["amount"],
+                           category=expense["category"],
+                           date=expense["date"],
+                           description=expense["description"] or "")
 
 
 @app.route("/expenses/<int:id>/delete")
