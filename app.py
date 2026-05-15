@@ -20,6 +20,7 @@ def inject_user():
         db.close()
     return {"current_user": user}
 
+
 with app.app_context():
     init_db()
     seed_db()
@@ -28,6 +29,7 @@ with app.app_context():
 # ------------------------------------------------------------------ #
 # Routes                                                              #
 # ------------------------------------------------------------------ #
+
 
 @app.route("/")
 def landing():
@@ -40,19 +42,25 @@ def register():
         return redirect(url_for("landing"))
 
     if request.method == "POST":
-        name     = request.form.get("name", "").strip()
-        email    = request.form.get("email", "").strip().lower()
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
 
         if not name or not email or not password:
-            return render_template("register.html",
-                                   error="All fields are required.",
-                                   name=name, email=email)
+            return render_template(
+                "register.html",
+                error="All fields are required.",
+                name=name,
+                email=email,
+            )
 
         if len(password) < 8:
-            return render_template("register.html",
-                                   error="Password must be at least 8 characters.",
-                                   name=name, email=email)
+            return render_template(
+                "register.html",
+                error="Password must be at least 8 characters.",
+                name=name,
+                email=email,
+            )
 
         db = get_db()
         existing = db.execute(
@@ -60,9 +68,12 @@ def register():
         ).fetchone()
         if existing:
             db.close()
-            return render_template("register.html",
-                                   error="An account with that email already exists.",
-                                   name=name, email=email)
+            return render_template(
+                "register.html",
+                error="An account with that email already exists.",
+                name=name,
+                email=email,
+            )
 
         db.execute(
             "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)",
@@ -81,24 +92,22 @@ def login():
         return redirect(url_for("landing"))
 
     if request.method == "POST":
-        email    = request.form.get("email", "").strip().lower()
+        email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
 
         if not email or not password:
-            return render_template("login.html",
-                                   error="Invalid email or password.",
-                                   email=email)
+            return render_template(
+                "login.html", error="Invalid email or password.", email=email
+            )
 
         db = get_db()
-        user = db.execute(
-            "SELECT * FROM users WHERE email = ?", (email,)
-        ).fetchone()
+        user = db.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
         db.close()
 
         if not user or not check_password_hash(user["password_hash"], password):
-            return render_template("login.html",
-                                   error="Invalid email or password.",
-                                   email=email)
+            return render_template(
+                "login.html", error="Invalid email or password.", email=email
+            )
 
         session["user_id"] = user["id"]
         return redirect(url_for("profile"))
@@ -109,6 +118,7 @@ def login():
 # ------------------------------------------------------------------ #
 # Placeholder routes — students will implement these                  #
 # ------------------------------------------------------------------ #
+
 
 @app.route("/terms")
 def terms():
@@ -130,14 +140,15 @@ def logout():
 # Profile helpers                                                      #
 # ------------------------------------------------------------------ #
 
+
 def _get_transactions(raw_rows):
     return [
         {
-            "id":          row["id"],
-            "date":        row["date"],
+            "id": row["id"],
+            "date": row["date"],
             "description": row["description"],
-            "category":    row["category"],
-            "amount":      f"₹{row['amount']:,.2f}"
+            "category": row["category"],
+            "amount": f"₹{row['amount']:,.2f}",
         }
         for row in raw_rows
     ]
@@ -169,12 +180,14 @@ def _get_categories(raw_rows):
 
     result = []
     for rank, (name, cat_total) in enumerate(sorted_cats, start=1):
-        result.append({
-            "name": name,
-            "amount": f"₹{cat_total:,.0f}",
-            "percent": int(cat_total / max_total * 100),
-            "fill": f"fill-{min(rank, 6)}",
-        })
+        result.append(
+            {
+                "name": name,
+                "amount": f"₹{cat_total:,.0f}",
+                "percent": int(cat_total / max_total * 100),
+                "fill": f"fill-{min(rank, 6)}",
+            }
+        )
     return result
 
 
@@ -189,10 +202,10 @@ def _parse_date(s):
 def _months_ago(n):
     today = date.today()
     month = today.month - n
-    year  = today.year
+    year = today.year
     while month <= 0:
         month += 12
-        year  -= 1
+        year -= 1
     day = min(today.day, calendar.monthrange(year, month)[1])
     return date(year, month, day).strftime("%Y-%m-%d")
 
@@ -205,7 +218,7 @@ def profile():
     user_id = session["user_id"]
 
     date_from = _parse_date(request.args.get("from", "").strip())
-    date_to   = _parse_date(request.args.get("to", "").strip())
+    date_to = _parse_date(request.args.get("to", "").strip())
 
     db = get_db()
 
@@ -214,26 +227,32 @@ def profile():
     ).fetchone()
 
     if date_from and date_to:
-        sql    = "SELECT id, amount, category, date, description FROM expenses WHERE user_id = ? AND date BETWEEN ? AND ? ORDER BY date DESC"
+        sql = "SELECT id, amount, category, date, description FROM expenses WHERE user_id = ? AND date BETWEEN ? AND ? ORDER BY date DESC"
         params = (user_id, date_from, date_to)
     elif date_from:
-        sql    = "SELECT id, amount, category, date, description FROM expenses WHERE user_id = ? AND date >= ? ORDER BY date DESC"
+        sql = "SELECT id, amount, category, date, description FROM expenses WHERE user_id = ? AND date >= ? ORDER BY date DESC"
         params = (user_id, date_from)
     elif date_to:
-        sql    = "SELECT id, amount, category, date, description FROM expenses WHERE user_id = ? AND date <= ? ORDER BY date DESC"
+        sql = "SELECT id, amount, category, date, description FROM expenses WHERE user_id = ? AND date <= ? ORDER BY date DESC"
         params = (user_id, date_to)
     else:
-        sql    = "SELECT id, amount, category, date, description FROM expenses WHERE user_id = ? ORDER BY date DESC"
+        sql = "SELECT id, amount, category, date, description FROM expenses WHERE user_id = ? ORDER BY date DESC"
         params = (user_id,)
 
     raw_rows = db.execute(sql, params).fetchall()
     db.close()
 
-    member_since = datetime.strptime(user_row["created_at"][:10], "%Y-%m-%d").strftime("%B %Y")
-    user = {"name": user_row["name"], "email": user_row["email"], "member_since": member_since}
+    member_since = datetime.strptime(user_row["created_at"][:10], "%Y-%m-%d").strftime(
+        "%B %Y"
+    )
+    user = {
+        "name": user_row["name"],
+        "email": user_row["email"],
+        "member_since": member_since,
+    }
     transactions = _get_transactions(raw_rows)
-    stats        = _get_stats(raw_rows)
-    categories   = _get_categories(raw_rows)
+    stats = _get_stats(raw_rows)
+    categories = _get_categories(raw_rows)
 
     today_str = date.today().strftime("%Y-%m-%d")
     quick_filters = {
@@ -243,11 +262,16 @@ def profile():
         "today": today_str,
     }
 
-    return render_template("profile.html",
-                           user=user, stats=stats,
-                           transactions=transactions, categories=categories,
-                           date_from=date_from, date_to=date_to,
-                           quick_filters=quick_filters)
+    return render_template(
+        "profile.html",
+        user=user,
+        stats=stats,
+        transactions=transactions,
+        categories=categories,
+        date_from=date_from,
+        date_to=date_to,
+        quick_filters=quick_filters,
+    )
 
 
 @app.route("/analytics")
@@ -262,12 +286,20 @@ def add_expense():
     if not session.get("user_id"):
         return redirect(url_for("login"))
 
-    categories = ["Food", "Transport", "Bills", "Health", "Entertainment", "Shopping", "Other"]
+    categories = [
+        "Food",
+        "Transport",
+        "Bills",
+        "Health",
+        "Entertainment",
+        "Shopping",
+        "Other",
+    ]
 
     if request.method == "POST":
-        amount_raw  = request.form.get("amount", "").strip()
-        category    = request.form.get("category", "").strip()
-        date_val    = request.form.get("date", "").strip()
+        amount_raw = request.form.get("amount", "").strip()
+        category = request.form.get("category", "").strip()
+        date_val = request.form.get("date", "").strip()
         description = request.form.get("description", "").strip()
 
         try:
@@ -275,25 +307,37 @@ def add_expense():
             if amount <= 0:
                 raise ValueError
         except ValueError:
-            return render_template("add_expense.html",
-                                   categories=categories,
-                                   error="Amount must be a positive number.",
-                                   amount=amount_raw, category=category,
-                                   date=date_val, description=description)
+            return render_template(
+                "add_expense.html",
+                categories=categories,
+                error="Amount must be a positive number.",
+                amount=amount_raw,
+                category=category,
+                date=date_val,
+                description=description,
+            )
 
         if category not in categories:
-            return render_template("add_expense.html",
-                                   categories=categories,
-                                   error="Please select a valid category.",
-                                   amount=amount_raw, category=category,
-                                   date=date_val, description=description)
+            return render_template(
+                "add_expense.html",
+                categories=categories,
+                error="Please select a valid category.",
+                amount=amount_raw,
+                category=category,
+                date=date_val,
+                description=description,
+            )
 
         if not _parse_date(date_val):
-            return render_template("add_expense.html",
-                                   categories=categories,
-                                   error="Please enter a valid date.",
-                                   amount=amount_raw, category=category,
-                                   date=date_val, description=description)
+            return render_template(
+                "add_expense.html",
+                categories=categories,
+                error="Please enter a valid date.",
+                amount=amount_raw,
+                category=category,
+                date=date_val,
+                description=description,
+            )
 
         db = get_db()
         db.execute(
@@ -304,9 +348,11 @@ def add_expense():
         db.close()
         return redirect(url_for("profile"))
 
-    return render_template("add_expense.html",
-                           categories=categories,
-                           date=date.today().strftime("%Y-%m-%d"))
+    return render_template(
+        "add_expense.html",
+        categories=categories,
+        date=date.today().strftime("%Y-%m-%d"),
+    )
 
 
 @app.route("/expenses/<int:id>/edit", methods=["GET", "POST"])
@@ -314,7 +360,15 @@ def edit_expense(id):
     if not session.get("user_id"):
         return redirect(url_for("login"))
 
-    categories = ["Food", "Transport", "Bills", "Health", "Entertainment", "Shopping", "Other"]
+    categories = [
+        "Food",
+        "Transport",
+        "Bills",
+        "Health",
+        "Entertainment",
+        "Shopping",
+        "Other",
+    ]
     db = get_db()
 
     expense = db.execute("SELECT * FROM expenses WHERE id = ?", (id,)).fetchone()
@@ -326,9 +380,9 @@ def edit_expense(id):
         return "Forbidden", 403
 
     if request.method == "POST":
-        amount_raw  = request.form.get("amount", "").strip()
-        category    = request.form.get("category", "").strip()
-        date_val    = request.form.get("date", "").strip()
+        amount_raw = request.form.get("amount", "").strip()
+        category = request.form.get("category", "").strip()
+        date_val = request.form.get("date", "").strip()
         description = request.form.get("description", "").strip()
 
         try:
@@ -337,27 +391,42 @@ def edit_expense(id):
                 raise ValueError
         except ValueError:
             db.close()
-            return render_template("edit_expense.html",
-                                   categories=categories, expense_id=id,
-                                   error="Amount must be a positive number.",
-                                   amount=amount_raw, category=category,
-                                   date=date_val, description=description)
+            return render_template(
+                "edit_expense.html",
+                categories=categories,
+                expense_id=id,
+                error="Amount must be a positive number.",
+                amount=amount_raw,
+                category=category,
+                date=date_val,
+                description=description,
+            )
 
         if category not in categories:
             db.close()
-            return render_template("edit_expense.html",
-                                   categories=categories, expense_id=id,
-                                   error="Please select a valid category.",
-                                   amount=amount_raw, category=category,
-                                   date=date_val, description=description)
+            return render_template(
+                "edit_expense.html",
+                categories=categories,
+                expense_id=id,
+                error="Please select a valid category.",
+                amount=amount_raw,
+                category=category,
+                date=date_val,
+                description=description,
+            )
 
         if not _parse_date(date_val):
             db.close()
-            return render_template("edit_expense.html",
-                                   categories=categories, expense_id=id,
-                                   error="Please enter a valid date.",
-                                   amount=amount_raw, category=category,
-                                   date=date_val, description=description)
+            return render_template(
+                "edit_expense.html",
+                categories=categories,
+                expense_id=id,
+                error="Please enter a valid date.",
+                amount=amount_raw,
+                category=category,
+                date=date_val,
+                description=description,
+            )
 
         db.execute(
             "UPDATE expenses SET amount=?, category=?, date=?, description=? WHERE id=? AND user_id=?",
@@ -368,17 +437,41 @@ def edit_expense(id):
         return redirect(url_for("profile"))
 
     db.close()
-    return render_template("edit_expense.html",
-                           categories=categories, expense_id=id,
-                           amount=expense["amount"],
-                           category=expense["category"],
-                           date=expense["date"],
-                           description=expense["description"] or "")
+    return render_template(
+        "edit_expense.html",
+        categories=categories,
+        expense_id=id,
+        amount=expense["amount"],
+        category=expense["category"],
+        date=expense["date"],
+        description=expense["description"] or "",
+    )
 
 
-@app.route("/expenses/<int:id>/delete")
+@app.route("/expenses/<int:id>/delete", methods=["POST"])
 def delete_expense(id):
-    return "Delete expense — coming in Step 9"
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+
+    db = get_db()
+    expense = db.execute(
+        "SELECT id, user_id FROM expenses WHERE id = ?", (id,)
+    ).fetchone()
+
+    if expense is None:
+        db.close()
+        return "Not found", 404
+    if expense["user_id"] != session["user_id"]:
+        db.close()
+        return "Forbidden", 403
+
+    db.execute(
+        "DELETE FROM expenses WHERE id = ? AND user_id = ?",
+        (id, session["user_id"]),
+    )
+    db.commit()
+    db.close()
+    return redirect(url_for("profile"))
 
 
 if __name__ == "__main__":
