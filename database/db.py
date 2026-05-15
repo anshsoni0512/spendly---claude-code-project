@@ -34,6 +34,15 @@ def init_db():
             created_at  TEXT    DEFAULT (datetime('now'))
         )
     """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS months (
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id    INTEGER NOT NULL REFERENCES users(id),
+            year_month TEXT    NOT NULL,
+            created_at TEXT    DEFAULT (datetime('now')),
+            UNIQUE(user_id, year_month)
+        )
+    """)
     conn.commit()
     conn.close()
 
@@ -52,14 +61,14 @@ def seed_db():
     user_id = cursor.lastrowid
 
     expenses = [
-        (user_id, 450.00,  "Food",          "2026-05-01", "Lunch at café"),
-        (user_id, 180.00,  "Transport",     "2026-05-02", "Ola cab to office"),
-        (user_id, 1200.00, "Bills",         "2026-05-03", "Electricity bill"),
-        (user_id, 850.00,  "Health",        "2026-05-05", "Pharmacy - vitamins"),
-        (user_id, 599.00,  "Entertainment", "2026-05-07", "Netflix subscription"),
-        (user_id, 2300.00, "Shopping",      "2026-05-09", "New headphones"),
-        (user_id, 200.00,  "Other",         "2026-05-10", "Miscellaneous"),
-        (user_id, 320.00,  "Food",          "2026-05-11", "Grocery run"),
+        (user_id, 450.00, "Food", "2026-05-01", "Lunch at café"),
+        (user_id, 180.00, "Transport", "2026-05-02", "Ola cab to office"),
+        (user_id, 1200.00, "Bills", "2026-05-03", "Electricity bill"),
+        (user_id, 850.00, "Health", "2026-05-05", "Pharmacy - vitamins"),
+        (user_id, 599.00, "Entertainment", "2026-05-07", "Netflix subscription"),
+        (user_id, 2300.00, "Shopping", "2026-05-09", "New headphones"),
+        (user_id, 200.00, "Other", "2026-05-10", "Miscellaneous"),
+        (user_id, 320.00, "Food", "2026-05-11", "Grocery run"),
     ]
     conn.executemany(
         "INSERT INTO expenses (user_id, amount, category, date, description) VALUES (?, ?, ?, ?, ?)",

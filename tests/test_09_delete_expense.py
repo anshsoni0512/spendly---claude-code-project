@@ -7,7 +7,7 @@ that unauthenticated callers are redirected to /login, requests for non-existent
 expenses return 404, and attempts to delete another user's expense return 403
 without touching the database row.
 
-All monetary assertions use ₹ (INR). No seed data is used; every test inserts
+All monetary assertions use $ (USD). No seed data is used; every test inserts
 its own rows so the expected values are always deterministic.
 """
 
@@ -324,12 +324,12 @@ class TestDeleteExpenseStatsUpdate:
         delete_id = _insert_expense(
             db, test_user["id"], 500.00, "Bills", "2026-05-02", "Cable"
         )
-        # Before delete: total = ₹1,500
+        # Before delete: total = $1,500
         _delete_post(auth_client, delete_id)
         response = auth_client.get("/profile")
-        # After delete: total = ₹1,000; ₹1,500 must no longer appear
-        assert "₹1,000".encode() in response.data
-        assert "₹1,500".encode() not in response.data
+        # After delete: total = $1,000; $1,500 must no longer appear
+        assert "$1,000".encode() in response.data
+        assert "$1,500".encode() not in response.data
 
     def test_transaction_count_decreases_by_one_after_deletion(
         self, auth_client, test_user, db
@@ -348,13 +348,13 @@ class TestDeleteExpenseStatsUpdate:
     def test_total_spent_is_zero_when_last_expense_deleted(
         self, auth_client, test_user, db
     ):
-        """Deleting the only expense must make total_spent show ₹0."""
+        """Deleting the only expense must make total_spent show $0."""
         expense_id = _insert_expense(
             db, test_user["id"], 800.00, "Shopping", "2026-05-04", "Clothes"
         )
         _delete_post(auth_client, expense_id)
         response = auth_client.get("/profile")
-        assert "₹0".encode() in response.data
+        assert "$0".encode() in response.data
 
     def test_transaction_count_is_zero_when_last_expense_deleted(
         self, auth_client, test_user, db
@@ -413,10 +413,10 @@ class TestDeleteExpenseProfileTemplate:
         assert f"/expenses/{id_b}/delete".encode() in response.data
 
     def test_profile_expense_amount_uses_inr_symbol(self, auth_client, test_user, db):
-        """Expense amounts displayed in the transactions table must use ₹, not $."""
+        """Expense amounts displayed in the transactions table must use $, not $."""
         _insert_expense(
             db, test_user["id"], 1200.00, "Bills", "2026-05-06", "Phone plan"
         )
         response = auth_client.get("/profile")
-        assert "₹".encode() in response.data
+        assert "$".encode() in response.data
         assert b"$" not in response.data

@@ -6,7 +6,7 @@ parameters (YYYY-MM-DD) and filters the displayed expenses, summary stats,
 and category breakdown to only the matching rows. When neither parameter is
 supplied the route returns all expenses, preserving previous behaviour.
 
-All monetary assertions use ₹ (INR). No seed data is used; every test
+All monetary assertions use $ (USD). No seed data is used; every test
 inserts its own rows so the expected values are always deterministic.
 """
 
@@ -84,8 +84,8 @@ class TestProfileNoFilter:
             (500.00,  "Bills", "2026-05-05", "Internet"),
         ])
         response = _get_profile(auth_client)
-        # 1000 + 500 = 1,500  → rendered as ₹1,500
-        assert "₹1,500".encode() in response.data
+        # 1000 + 500 = 1,500  → rendered as $1,500
+        assert "$1,500".encode() in response.data
 
     def test_no_params_transaction_count_reflects_all_rows(self, auth_client, test_user, db):
         """Transaction count stat matches the total number of expense rows."""
@@ -145,9 +145,9 @@ class TestProfileFromFilter:
             (400.00,  "Bills", "2026-05-10", "May bill"),       # included
         ])
         response = _get_profile(auth_client, "from=2026-05-01")
-        assert "₹400".encode() in response.data
+        assert "$400".encode() in response.data
         # The excluded amount must not appear as total_spent
-        assert "₹1,400".encode() not in response.data
+        assert "$1,400".encode() not in response.data
 
     def test_from_filter_transaction_count_reflects_filtered_rows(self, auth_client, test_user, db):
         """Transaction count stat must only count rows on/after `from`."""
@@ -200,8 +200,8 @@ class TestProfileToFilter:
             (900.00, "Shopping", "2026-05-25", "Late purchase"),  # excluded
         ])
         response = _get_profile(auth_client, "to=2026-05-10")
-        assert "₹600".encode() in response.data
-        assert "₹1,500".encode() not in response.data
+        assert "$600".encode() in response.data
+        assert "$1,500".encode() not in response.data
 
     def test_to_filter_transaction_count_reflects_filtered_rows(self, auth_client, test_user, db):
         """Transaction count stat must only count rows on/before `to`."""
@@ -269,7 +269,7 @@ class TestProfileDateRangeFilter:
         ])
         response = _get_profile(auth_client, "from=2026-05-01&to=2026-05-10")
         # 200 + 300 = 500
-        assert "₹500".encode() in response.data
+        assert "$500".encode() in response.data
 
     def test_range_filter_transaction_count_reflects_range(self, auth_client, test_user, db):
         """Transaction count stat must equal the number of in-range expenses."""
@@ -311,8 +311,8 @@ class TestProfileDateRangeFilter:
         ])
         response = _get_profile(auth_client, "from=2026-05-01&to=2026-05-31")
         assert response.status_code == 200
-        # total_spent: ₹0
-        assert "₹0".encode() in response.data
+        # total_spent: $0
+        assert "$0".encode() in response.data
         # transaction count: 0
         assert b">0<" in response.data
 
@@ -543,42 +543,42 @@ class TestProfileMalformedDateParams:
 
 
 # ------------------------------------------------------------------ #
-# Class: INR currency rendering                                       #
+# Class: USD currency rendering                                       #
 # ------------------------------------------------------------------ #
 
 class TestProfileCurrencyRendering:
     def test_transaction_amounts_use_inr_symbol(self, auth_client, test_user, db):
-        """Every displayed monetary amount must use the ₹ symbol, never $."""
+        """Every displayed monetary amount must use the $ symbol, never $."""
         _insert_expenses(db, test_user["id"], [
             (1500.00, "Food", "2026-05-05", "Expensive lunch"),
         ])
         response = _get_profile(auth_client)
-        assert "₹".encode() in response.data
+        assert "$".encode() in response.data
         assert b"$" not in response.data
 
     def test_total_spent_uses_inr_symbol(self, auth_client, test_user, db):
-        """The total_spent stat must be prefixed with ₹."""
+        """The total_spent stat must be prefixed with $."""
         _insert_expenses(db, test_user["id"], [
             (2000.00, "Bills", "2026-05-03", "Water bill"),
         ])
         response = _get_profile(auth_client)
-        assert "₹2,000".encode() in response.data
+        assert "$2,000".encode() in response.data
 
     def test_category_breakdown_amounts_use_inr_symbol(self, auth_client, test_user, db):
-        """Category breakdown amounts must use ₹ prefix."""
+        """Category breakdown amounts must use $ prefix."""
         _insert_expenses(db, test_user["id"], [
             (750.00, "Health", "2026-05-04", "Doctor visit"),
         ])
         response = _get_profile(auth_client)
-        assert "₹750".encode() in response.data
+        assert "$750".encode() in response.data
 
     def test_filtered_transaction_amount_uses_inr_symbol(self, auth_client, test_user, db):
-        """Amounts shown under a date filter must also use ₹, not $."""
+        """Amounts shown under a date filter must also use $, not $."""
         _insert_expenses(db, test_user["id"], [
             (850.00, "Shopping", "2026-05-06", "Filtered purchase"),
         ])
         response = _get_profile(auth_client, "from=2026-05-01&to=2026-05-10")
-        assert "₹".encode() in response.data
+        assert "$".encode() in response.data
         assert b"$" not in response.data
 
 

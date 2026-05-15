@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}My Profile — Spendly{% endblock %}
+{% block title %}Dashboard — Sonico{% endblock %}
 
 {% block content %}
 <div class="profile-page">
@@ -18,7 +18,7 @@
             </div>
         </div>
         <div style="margin-left:auto;display:flex;gap:0.75rem">
-            <a href="{{ url_for('add_expense') }}" class="btn-primary">+ Add Expense</a>
+            <a href="{{ url_for('add_expense') }}{% if active_month %}?date={{ active_month }}-01{% endif %}" class="btn-primary">+ Add Expense</a>
             <a href="{{ url_for('analytics') }}" class="btn-primary">
                 <i data-lucide="bar-chart-2" style="width:16px;height:16px;vertical-align:middle;margin-right:6px"></i>Analytics
             </a>
@@ -27,19 +27,29 @@
 
     <!-- Date filter -->
     <div class="profile-card filter-card">
-        <div class="quick-filters">
-            <a href="/profile?from={{ quick_filters['1m'] }}&to={{ quick_filters['today'] }}"
-               class="btn-quick {% if date_from == quick_filters['1m'] and date_to == quick_filters['today'] %}btn-quick-active{% endif %}">
-                Last 1 Month
-            </a>
-            <a href="/profile?from={{ quick_filters['3m'] }}&to={{ quick_filters['today'] }}"
-               class="btn-quick {% if date_from == quick_filters['3m'] and date_to == quick_filters['today'] %}btn-quick-active{% endif %}">
-                Last 3 Months
-            </a>
-            <a href="/profile?from={{ quick_filters['6m'] }}&to={{ quick_filters['today'] }}"
-               class="btn-quick {% if date_from == quick_filters['6m'] and date_to == quick_filters['today'] %}btn-quick-active{% endif %}">
-                Last 6 Months
-            </a>
+        <div class="month-filters">
+            {% if available_months %}
+                {% for m in available_months %}
+                <a href="/profile?month={{ m.key }}"
+                   class="btn-quick {% if active_month == m.key %}btn-quick-active{% endif %}">
+                    {{ m.label }}
+                </a>
+                {% endfor %}
+            {% else %}
+                <span class="no-months-hint">No months yet — add your first month to get started.</span>
+            {% endif %}
+
+            <!-- Add Month button -->
+            <form method="POST" action="/months/add" style="display:inline;margin:0;">
+                <input type="hidden" name="year_month" value="{{ next_month_key }}">
+                <button type="submit" class="btn-add-month" title="Open {{ next_month_label }} for expense tracking">
+                    + {{ next_month_label }}
+                </button>
+            </form>
+
+            {% if active_month or date_from or date_to %}
+            <a href="/profile" class="btn-quick" style="color:var(--danger);border-color:var(--danger);">✕ Clear</a>
+            {% endif %}
         </div>
         <form class="filter-form" method="get" action="/profile">
             <div class="filter-fields">
@@ -56,12 +66,17 @@
             </div>
             <div class="filter-actions">
                 <button type="submit" class="btn-filter">Filter</button>
-                {% if date_from or date_to %}
+                {% if not active_month and (date_from or date_to) %}
                 <a href="/profile" class="btn-ghost btn-filter-clear">Clear</a>
                 {% endif %}
             </div>
         </form>
-        {% if date_from or date_to %}
+        {% if active_month %}
+        <p class="filter-active-label">
+            <i data-lucide="calendar"></i>
+            Showing expenses for <strong>{{ date_from[:7] }}</strong>
+        </p>
+        {% elif date_from or date_to %}
         <p class="filter-active-label">
             <i data-lucide="filter"></i>
             Showing:
