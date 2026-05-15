@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"import json,sys,subprocess,os; data=json.load(sys.stdin); path=data.get('tool_input',{}).get('file_path') or data.get('file_path',''); r=subprocess.run(['black',path],capture_output=True,text=True) if path.endswith('.py') and os.path.exists(path) else None; print(f'black: {path}',file=sys.stderr) if r and r.returncode==0 else (print(f'black error: {r.stderr}',file=sys.stderr) if r else None)\""
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"import json,sys,re; data=json.load(sys.stdin); tool=data.get('tool_name',''); ti=data.get('tool_input',{}); cmd=ti.get('command',''); path=ti.get('file_path',''); blocked=(tool=='Bash' and bool(re.search(r'(rm|unlink|shred)[^|&;]*\\.(db|env)\\b',cmd))) or (tool in ('Write','Edit','MultiEdit') and bool(re.search(r'\\.(db|env)(\\.|$)',path))); print('BLOCKED: .db and .env files cannot be deleted or modified.',file=sys.stderr) if blocked else None; sys.exit(2 if blocked else 0)\""
+          }
+        ]
+      }
+    ]
+  }
+}
