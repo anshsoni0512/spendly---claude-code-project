@@ -1,12 +1,20 @@
 # Spendly — Personal Expense Tracker
 
 > A full-stack web app built entirely using **Claude Code** (AI-powered CLI by Anthropic)
+> 
+> ---
+
+## Live Demo
+
+### [https://spendly-production-d15b.up.railway.app](https://spendly-production-d15b.up.railway.app)
+
+---
 
 ---
 
 ## What is Spendly?
 
-Spendly is a personal finance tracker built with Python and Flask. It gives users a clean dashboard to manage their day-to-day spending — from adding expenses to viewing category-wise breakdowns and monthly trends.
+Spendly is a personal finance tracker built with Python and Flask. It gives users a clean dashboard to manage their day-to-day spending, from adding expenses to viewing category-wise breakdowns and monthly trends.
 
 **Key features:**
 - Secure user registration and login (password hashing with Werkzeug)
@@ -21,14 +29,14 @@ Spendly is a personal finance tracker built with Python and Flask. It gives user
 
 ## How I Built This with Claude Code
 
-This project was built **step by step using Claude Code** — Anthropic's AI coding assistant that runs directly in your terminal. Instead of writing all the code manually, I described what I wanted and Claude Code wrote the routes, templates, database queries, and tests — while I reviewed and guided the direction.
+This project was built **step by step using Claude Code** - Anthropic's AI coding assistant that runs directly in your terminal. Instead of writing all the code manually, I described what I wanted and Claude Code wrote the routes, templates, database queries, and tests - while I reviewed and guided the direction.
 
 ### 1. Spec-Driven Development
-Every feature started as a **spec file** (a plain text description of what the feature should do). Claude Code read the spec and implemented it — keeping things predictable and reviewable at each step.
+Every feature started as a **spec file** (a plain text description of what the feature should do). Claude Code read the spec and implemented it - keeping things predictable and reviewable at each step.
 
 | Step | Feature |
 |------|---------|
-| 01 | Database setup — SQLite schema for users and expenses |
+| 01 | Database setup - SQLite schema for users and expenses |
 | 02 | User registration with validation |
 | 03 | Login & session-based authentication |
 | 04 | Profile page UI with expense table |
@@ -38,7 +46,7 @@ Every feature started as a **spec file** (a plain text description of what the f
 | 08 | Edit expense with ownership checks |
 | 09 | Delete expense with confirmation |
 
-After each step, Claude Code also wrote **pytest tests** based on the spec — not the implementation — so tests verified behavior, not just code.
+After each step, Claude Code also wrote **pytest tests** based on the spec - not the implementation - so tests verified behavior, not just code.
 
 ### 2. Custom Slash Commands
 To avoid repeating the same instructions every session, I created reusable slash commands stored in `.claude/commands/`. These are markdown files that Claude Code executes when called:
@@ -56,15 +64,15 @@ To avoid repeating the same instructions every session, I created reusable slash
 ### 3. Custom AI Sub-Agents
 Beyond slash commands, I set up specialized AI agents inside `.claude/agents/`. Each agent has its own role and only activates when needed:
 
-- **spendly-test-writer** — reads a feature spec and writes pytest test cases from scratch, spec-first not implementation-first
-- **pytest-test-runner** — takes the completed test suite and runs it, reporting pass/fail with context
-- **Quality Reviewer (qr)** — reviews changed code for readability, duplication, and Flask best practices
-- **Security Reviewer (sr)** — scans the same diff for security issues like SQL injection, missing auth checks, or session misuse
+- **spendly-test-writer** - reads a feature spec and writes pytest test cases from scratch, spec-first not implementation-first
+- **pytest-test-runner** - takes the completed test suite and runs it, reporting pass/fail with context
+- **Quality Reviewer (qr)** - reviews changed code for readability, duplication, and Flask best practices
+- **Security Reviewer (sr)** - scans the same diff for security issues like SQL injection, missing auth checks, or session misuse
 
 The quality and security agents ran **in parallel** on every feature using `/code-review`, giving two independent opinions at once.
 
-### 4. CLAUDE.md — Project Memory
-A `CLAUDE.md` file at the root of the project told Claude Code everything it needed to know about the codebase — architecture, commands to run the app, the database schema, and conventions like currency format. This meant every new conversation started with full context, no re-explaining needed.
+### 4. CLAUDE.md - Project Memory
+A `CLAUDE.md` file at the root of the project told Claude Code everything it needed to know about the codebase - architecture, commands to run the app, the database schema, and conventions like currency format. This meant every new conversation started with full context, no re-explaining needed.
 
 ### 5. Marketplace Plugins
 I extended Claude Code's capabilities by installing a plugin from the marketplace:
@@ -155,12 +163,6 @@ Demo account (auto-seeded on first run):
 - **Email:** `demo@spendly.com`
 - **Password:** `demo123`
 
----
 
-## Live Demo
-
-### [https://spendly-production-d15b.up.railway.app](https://spendly-production-d15b.up.railway.app)
-
----
 
 *Built by **Ansh Soni** using [Claude Code](https://claude.ai/code) by Anthropic*
