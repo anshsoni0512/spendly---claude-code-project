@@ -1,4 +1,4 @@
-# Spendly — Personal Expense Tracker
+# Spendly (Sonico) — Personal Expense Tracker
 
 > A full-stack web app built entirely using **Claude Code** (AI-powered CLI by Anthropic)
 > 
