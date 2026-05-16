@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(RAILWAY_CALLER=\"skill:use-railway@1.2.1\" RAILWAY_AGENT_SESSION=\"railway-skill-$\\(date +%s\\)-$$\" railway deployment list --service spendly --json)"
+    ]
+  }
+}
