@@ -162,7 +162,7 @@ def _get_stats(raw_rows):
         cat_totals[row["category"]] += row["amount"]
     top = max(cat_totals, key=cat_totals.get) if cat_totals else "N/A"
     return {
-        "total_spent": f"${total:,.0f}",
+        "total_spent": f"${total:,.2f}",
         "transactions": len(raw_rows),
         "top_category": top,
     }
@@ -184,7 +184,7 @@ def _get_categories(raw_rows):
         result.append(
             {
                 "name": name,
-                "amount": f"${cat_total:,.0f}",
+                "amount": f"${cat_total:,.2f}",
                 "percent": int(cat_total / max_total * 100),
                 "fill": f"fill-{min(rank, 6)}",
             }
